@@ -104,29 +104,7 @@ fn instanceof FN;  // true
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## about me
+## About Me
 
 wechat: chenfengbukeyimi
 
