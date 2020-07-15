@@ -9,7 +9,6 @@
 
 
 
-
 ## 构建 npm 库
 
 - 在适当的目录下创建 npm 库目录(do-ui), 通过 `npm init` 生成 `package,json` 文件.
@@ -173,7 +172,6 @@ module.exports = (env, args) => {
 
 ```json
 /* do-ui/package.json */
-
 {
 	...
 	"scripts": {
@@ -192,5 +190,116 @@ module.exports = (env, args) => {
 
 ```bash
 D:do-ui> npm run start
+```
+
+
+
+
+## 编写组件
+
+在目录 src/plugins/components 下创建目录 button 和文件 index.vue
+
+```vue
+/* button.vue */
+<templete>
+  <button @click="hand_btn" :class="btnClass" :disabled="disabled">
+  	<slot>Btn</slot>    
+  </button>
+</templete>
+
+<script>
+export default {
+  name: 'do-button',
+  props: {
+    // 按钮状态
+    disabled: Boolean,
+    // 按钮形状(圆角|直角)
+    shape: { type: String, validator: v => (['circle', 'rectangle'].filter(item => item === v)).length },
+    // 按钮类型 (success 成功, error 失败, info 信息, warning 警告)
+    type: { type: String, validator: v => (['default', 'success', 'error', 'info', 'warning'].filter(item => item === v)).length},
+    // 按钮大小
+    size: { type: String, validator: v => (['large', 'medium', 'small'].filter(item => item === v)).length },
+  },
+  data () {
+    return {
+      originClass: 'do-button'
+    };
+  },
+  methods: {
+    hand_btn (ev) { this.$emit('click', ev) }
+  },
+  computed: {
+    btnClass () {
+      const { shape, type, size, originClass } = this
+      return [
+        originClass,
+        type ? originClass + '-' + type : originClass + '-' + 'default',
+        size ? originClass + '-' + size : '',
+        shape ? originClass + '-' + shape : ''
+      ]
+    }
+  }
+}
+</script>
+```
+
+
+
+在目录 src/pugins/assets 下创建组件的样式文件.
+
+在目录 src/plugins 下创建文件 style.js, index.js .
+
+```js
+/* 所有组件的样式集合 src/plugins/style.js */
+@import ('../assets/index.css');
+```
+
+
+
+```js
+/* src/plugins/index.js */
+/* 引入所有交互式组件 */
+const DoProtoPlugins = require('./prototype/index');
+
+const DoPlugins = {}:
+
+/* Vue 默认安装方法(Vue.use(Plugins)) */
+DoPlugins.install = (Vue, option) => {
+	const DoComps = require('./compoments/index');
+	for (const [k, v] of Object.entries(DoComps)) {
+      Vue.component('do' + k, createComponent(v))
+    }
+};
+
+module.exports = { DoProtoPlugins, DoPlugins };
+```
+
+
+
+## 使用组件
+
+在 src/main.js 中引入组件样式和组件模板.
+
+```js
+/* src/main.js */
+import Vue from 'vue';
+...
+
+/* 全局使用 start */
+/* 加载所有组件及样式 */
+import './plugins/assets/scss/index.scss'
+const { DoCompPlugins, DoProtoPlugins } = require('./plugins/index');
+
+Vue.use(DoCompPlugins);
+
+// 加载 Vue.prototype.$[name] 方法类型组件
+for (const k of Object.values(DoProtoPlugins)) { Vue.use(k) }
+/* 全局使用 end */
+
+/* 单独使用 start */
+import './plugins/assets/scss/button.scss';
+import Button from './plugins/components/button/index.vue';
+Vue.use(Button);
+/* 单独使用 start */
 ```
 
